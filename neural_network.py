@@ -1,4 +1,6 @@
+import pickle
 import numpy as np
+import pandas as pd
 
 
 def relu(vector):
@@ -21,20 +23,25 @@ def he_initialization(input_size, output_size):
 
 class NeuralNetwork:
 
-    LEARN_RATE = 0.1
+    LEARN_RATE = 0.01
     EPOCHS = 1000
 
-    def __init__(self, input_size=784, layer1_size=20, layer2_size=10, out_size=10) -> None:
+    def __init__(self, trained=False, input_size=784, layer1_size=20, layer2_size=10, out_size=10) -> None:
 
-        # weights init
-        self.W1 = he_initialization(input_size, layer1_size)
-        self.W2 = he_initialization(layer1_size, layer2_size)
-        self.W3 = he_initialization(layer2_size, out_size)
+        if not trained:
+            # weights init
+            self.W1 = he_initialization(layer1_size, input_size)
+            self.W2 = he_initialization(layer2_size, layer1_size)
+            self.W3 = he_initialization(out_size, layer2_size)
 
-        # biases
-        self.B1 = np.zeros(20)
-        self.B2 = np.zeros(10)
-        self.B3 = np.zeros(10)
+            # biases
+            self.B1 = np.zeros(20)
+            self.B2 = np.zeros(10)
+            self.B3 = np.zeros(10)
+
+        else:
+            with open('weights.pkl', 'rb') as file:
+                self.W1, self.B1, self.W2, self.B2, self.W3, self.B3 = pickle.load(file)
 
     def feedforward(self, input_vector: np.array) -> np.array:
         h1_result_vector = relu(np.dot(self.W1, input_vector) + self.B1)
@@ -56,19 +63,19 @@ class NeuralNetwork:
                 d_out = pred - answer
 
                 d_W3 = np.dot(d_out, h2.T)
-                d_b3 = np.sum(d_out, axis=1, keepdims=True)
+                d_b3 = np.sum(d_out, axis=0, keepdims=True)
 
                 d_h2 = np.dot(self.W3.T, d_out)
                 d_h2[h2 <= 0] = 0
 
-                d_W2 = np.dot(d_h2, h1.T)
-                d_b2 = np.sum(d_h2, axis=1, keepdims=True)
+                d_W2 = np.dot(d_h2[:, None], h1[None, :])
+                d_b2 = np.sum(d_h2, axis=0, keepdims=True)
 
                 d_h1 = np.dot(self.W2.T, d_h2)
                 d_h1[h1 <= 0] = 0
 
-                d_W1 = np.dot(d_h1, X.T)
-                d_b1 = np.sum(d_h1, axis=1, keepdims=True)
+                d_W1 = np.dot(d_h1[:, None], X[None, :])
+                d_b1 = np.sum(d_h1, axis=0, keepdims=True)
 
                 # updating weights and biases
                 self.W1 -= self.LEARN_RATE * d_W1
@@ -83,6 +90,10 @@ class NeuralNetwork:
                 loss = cross_entropy(answers, predictions)
                 print(f'Epoch {epoch} loss: {loss:.3f}')
 
+        # saving weights and biases
+        with open('weights.pkl', 'wb') as file:
+            pickle.dump([self.W1, self.B1, self.W2, self.B2, self.W3, self.B3], file)
+
 
 def cross_entropy(answers: np.array, predictions: np.array) -> float:
     n = answers.shape[0]
@@ -93,4 +104,39 @@ def cross_entropy(answers: np.array, predictions: np.array) -> float:
 
 
 if __name__ == '__main__':
-    ...
+
+    # reading training data
+    df_train = pd.read_csv('data/mnist_train.csv')
+
+    data_train = df_train.values
+
+    labels_train = data_train[:, 0]
+    inputs_train = data_train[:, 1:]
+
+    inputs_train = (inputs_train > 0).astype(int)
+
+    labels_one_hot_train = np.eye(10)[labels_train.astype(int)]
+
+    # training
+    network = NeuralNetwork(trained=False)
+    network.train(inputs_train, labels_one_hot_train)
+
+    # reading testing data
+    df_test = pd.read_csv('data/mnist_test.csv')
+
+    data_test = df_test.values
+
+    labels_test = data_test[:, 0]
+    inputs_test = data_test[:, 1:]
+
+    inputs_test = (inputs_test > 0).astype(int)
+
+    labels_one_hot_test = np.eye(10)[labels_test.astype(int)]
+
+    # testing
+    network_trained = NeuralNetwork(trained=True)
+    predictions_test = np.apply_along_axis(network_trained.feedforward, 1, inputs_test)
+
+    accuracy = np.sum(np.argmax(predictions_test, axis=1) == labels_test) / len(labels_test)
+
+    print(f'Total accuracy: {accuracy:.3f}')
