@@ -43,9 +43,7 @@ class NeuralNetwork:
             self.B3 = np.zeros(out_size)
 
         else:
-            with (open('weights.pkl', 'rb') as file):
-                (self.LEARN_RATE, self.EPOCHS, self.layer1_size, self.layer2_size,
-                 self.W1, self.B1, self.W2, self.B2, self.W3, self.B3) = pickle.load(file)
+            self.load_model()
 
     def feedforward(self, input_vector: np.array) -> np.array:
         h1_result_vector = relu(np.dot(self.W1, input_vector) + self.B1)
@@ -93,13 +91,16 @@ class NeuralNetwork:
                 loss = cross_entropy(answers, predictions)
                 print(f'Epoch {epoch} loss: {loss:.3f}')
 
-        self.save_model()
-
     # saving weights and biases
     def save_model(self):
         with open('weights.pkl', 'wb') as file:
             pickle.dump([self.LEARN_RATE, self.EPOCHS, self.layer1_size, self.layer2_size,
                          self.W1, self.B1, self.W2, self.B2, self.W3, self.B3], file)
+
+    def load_model(self):
+        with (open('weights.pkl', 'rb') as file):
+            (self.LEARN_RATE, self.EPOCHS, self.layer1_size, self.layer2_size,
+             self.W1, self.B1, self.W2, self.B2, self.W3, self.B3) = pickle.load(file)
 
 
 def cross_entropy(answers: np.array, predictions: np.array) -> float:
@@ -110,16 +111,20 @@ def cross_entropy(answers: np.array, predictions: np.array) -> float:
     return loss
 
 
-def find_the_best_model():
+def find_the_best_model(times):
     learn_rate_range = [0.001, 0.005, 0.01, 0.05, 0.1]
     epochs_range = [250, 500, 750, 1000, 1250, 1500]
     layer1_size_range = [12, 16, 20, 24, 28]
     layer2_size_range = [5, 10, 15]
 
-    best_model = None
-    best_accuracy = 0
+    best_model = NeuralNetwork(trained=True)
+    predictions_test = np.apply_along_axis(best_model.feedforward, 1, inputs_test)
+    predicted_labels_test = np.argmax(predictions_test, axis=1)
+    best_accuracy = np.sum(predicted_labels_test == labels_test) / len(labels_test)
 
-    for _ in range(2):
+    print(f'Best accuracy: {best_accuracy}')
+
+    for _ in range(times):
         learn_rate = np.random.choice(learn_rate_range)
         epochs = np.random.choice(epochs_range)
         layer1_size = np.random.choice(layer1_size_range)
@@ -136,9 +141,9 @@ def find_the_best_model():
         if accuracy > best_accuracy:
             best_model = model
             best_accuracy = accuracy
+            best_model.save_model()
 
     print(f'Best accuracy: {best_accuracy}')
-    best_model.save_model()
 
 
 if __name__ == '__main__':
@@ -173,11 +178,11 @@ if __name__ == '__main__':
     # testing
     # network_trained = NeuralNetwork(trained=True)
 
-    find_the_best_model()
+    # find_the_best_model(100)
 
     network = NeuralNetwork(trained=True)
     predictions_test = np.apply_along_axis(network.feedforward, 1, inputs_test)
 
     accuracy = np.sum(np.argmax(predictions_test, axis=1) == labels_test) / len(labels_test)
 
-    print(f'Total accuracy: {accuracy:.3f}')
+    print(f'Total accuracy: {(accuracy*100):.2f}%')
