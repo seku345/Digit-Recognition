@@ -23,7 +23,7 @@ def he_initialization(input_size, output_size):
 
 class NeuralNetwork:
 
-    LEARN_RATE = 0.01
+    LEARN_RATE = 0.05
     EPOCHS = 1000
 
     def __init__(self, trained=False, input_size=784, layer1_size=20, layer2_size=10, out_size=10) -> None:
@@ -35,9 +35,9 @@ class NeuralNetwork:
             self.W3 = he_initialization(out_size, layer2_size)
 
             # biases
-            self.B1 = np.zeros(20)
-            self.B2 = np.zeros(10)
-            self.B3 = np.zeros(10)
+            self.B1 = np.zeros(layer1_size)
+            self.B2 = np.zeros(layer2_size)
+            self.B3 = np.zeros(out_size)
 
         else:
             with open('weights.pkl', 'rb') as file:
