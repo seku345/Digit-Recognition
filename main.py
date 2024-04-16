@@ -17,7 +17,7 @@ def guess_number():
     nn = NeuralNetwork(trained=True)
 
     prediction = nn.feedforward(data)
-    print(prediction)
+
     return np.argmax(prediction, axis=0)
 
 
