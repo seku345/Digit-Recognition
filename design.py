@@ -30,6 +30,12 @@ class Ui_MainWindow(object):
         font.setPointSize(24)
         self.answerLabel.setFont(font)
         self.answerLabel.setObjectName("answerLabel")
+        self.verticalLayoutWidget = QtWidgets.QWidget(self.mainLayout)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 481, 471))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.canvasLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.canvasLayout.setContentsMargins(0, 0, 0, 0)
+        self.canvasLayout.setObjectName("canvasLayout")
         MainWindow.setCentralWidget(self.mainLayout)
 
         self.retranslateUi(MainWindow)

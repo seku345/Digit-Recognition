@@ -14,16 +14,6 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="mainLayout">
-   <widget class="QWidget" name="canvas" native="true">
-    <property name="geometry">
-     <rect>
-      <x>26</x>
-      <y>20</y>
-      <width>448</width>
-      <height>448</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QPushButton" name="checkButton">
     <property name="geometry">
      <rect>
@@ -68,6 +58,17 @@
     <property name="text">
      <string>I think it's:</string>
     </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>481</width>
+      <height>471</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="canvasLayout"/>
    </widget>
   </widget>
  </widget>
