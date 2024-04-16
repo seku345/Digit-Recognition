@@ -29,7 +29,7 @@ class DrawingWidget(QWidget):
         self.canvas.fill(Qt.black)
 
         self.last_point = QPoint()
-        self.penWidth = 32
+        self.penWidth = 16
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -56,8 +56,7 @@ class DrawingWidget(QWidget):
 
     def save(self):
         self.update()
-        scaled_canvas = self.canvas.scaled(28, 28, Qt.KeepAspectRatio)
-        scaled_canvas.save('number.png')
+        self.canvas.save('number.png')
 
     def clear(self):
         self.canvas = QtGui.QPixmap(448, 448)
