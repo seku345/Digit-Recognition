@@ -4,6 +4,9 @@ from scipy.ndimage import measurements, interpolation
 
 
 def center_image(img):
+    if np.all(img == 0):
+        return img
+
     cy, cx = measurements.center_of_mass(img)
     rows, cols = img.shape
 
